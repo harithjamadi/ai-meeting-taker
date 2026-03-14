@@ -8,6 +8,7 @@ dependencies = [
     "google-genai>=1.65.0",
     "notion-client>=3.0.0",
     "numpy<2.0",
+    "openai-whisper>=20250625",
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
