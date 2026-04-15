@@ -1,210 +1,93 @@
-# AI Meeting Assistant
+# AI Meeting Assistant (Obsidian + Llama.cpp Edition)
 
-A local-first, open-source meeting recorder that automatically transcribes audio and generates structured meeting minutes using AI.
-
-Audio is transcribed on-device with [Whisper](https://github.com/openai/whisper) — no audio ever leaves your machine. Only the plain-text transcript is sent to the AI backend of your choice for analysis.
+A local-first, privacy-focused meeting recorder that transcribes audio locally and generates comprehensive summaries into your Obsidian vault using open-source models.
 
 ---
 
-## Features
+## 🌟 New in this Version
 
-- 🎙️ Records microphone (and system audio on Windows / macOS with BlackHole)
-- 🔒 Local transcription via Whisper — audio stays on your machine
-- 🤖 Choice of AI backend for analysis: OpenRouter (free) or Gemini
-- 📝 Exports structured meeting minutes as Markdown files
-- ✅ Captures title, summary, key decisions, action items, and full transcript
-- 🔁 Automatic retry with correct backoff on rate-limit errors
+- **Llama.cpp Integration**: Use local GGUF models directly for 100% private analysis.
+- **Obsidian Optimization**: Automatic export with YAML Properties and beautiful Callouts.
+- **Faster-Whisper**: 4-8x faster transcription using `faster-whisper`.
+- **Enhanced Detail**: Captures topics, sentiment, and structured action items.
 
 ---
 
-## How It Works
+## 🚀 How It Works
 
 ```
-Microphone ──► WAV file ──► Whisper (local) ──► Transcript text ──► AI backend ──► Minutes .md
+Microphone ──► WAV ──► Faster-Whisper (Local) ──► Mistral NeMo (Llama.cpp) ──► Obsidian (.md)
 ```
 
-1. **Record** — captures mic audio into a temporary WAV file
-2. **Transcribe** — Whisper runs entirely on your CPU/GPU, no API call
-3. **Analyse** — transcript text is sent to your chosen backend (OpenRouter or Gemini)
-4. **Export** — structured minutes are saved to `meeting-content/`
+1. **Record**: Captures mic and system audio.
+2. **Transcribe**: Converts audio to text using `faster-whisper` (on your GPU/CPU).
+3. **Analyze**: Mistral NeMo (via Llama.cpp) summarizes the meeting.
+4. **Export**: Saves a Markdown file with YAML frontmatter and Callouts to your Obsidian vault.
 
 ---
 
-## Requirements
+## 📋 Requirements
 
-- Python 3.11+
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
-- [ffmpeg](https://ffmpeg.org/) (required by Whisper)
+- Python 3.13+
+- [ffmpeg](https://ffmpeg.org/) (Required for audio processing)
+- [uv](https://github.com/astral-sh/uv) (Recommended package manager)
+- A GGUF model file (e.g., Mistral NeMo 12B)
 
+---
+
+## 🛠️ Setup
+
+### 1. Install System Dependencies
 ```bash
 # macOS
 brew install ffmpeg
 
 # Ubuntu / Debian
 sudo apt install ffmpeg
-
-# Windows
-winget install ffmpeg
 ```
 
----
+### 2. Download a GGUF Model
+Download a GGUF model from Hugging Face (e.g., [Mistral-NeMo-12B-v1-GGUF](https://huggingface.co/bartowski/Mistral-NeMo-12B-v1-GGUF)). Place it in a `models/` directory.
 
-## Installation
-
+### 3. Install Python Dependencies
 ```bash
-git clone https://github.com/your-username/ai-meeting-taker
-cd ai-meeting-taker
-
-# Install Python dependencies
-uv add openai-whisper soundcard soundfile numpy pydantic python-dotenv
-
-# For the Gemini backend (optional)
-uv add google-genai
+uv sync
 ```
+*Note: This will compile llama-cpp-python for your hardware.*
 
----
-
-## Configuration
-
-Copy the example below into a `.env` file in the project root:
-
+### 4. Configuration
+Create a `.env` file:
 ```env
-# --- Whisper (local transcription) ---
-WHISPER_MODEL=base          # tiny | base | small | medium | large
-
-# --- OpenRouter backend ---
-OPENROUTER_API_KEY=sk-or-...
-OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free
-
-# --- Gemini backend ---
-GEMINI_API_KEY=AIza...
-GEMINI_MODEL=gemini-2.0-flash
+LLAMA_CPP_MODEL_PATH=models/mistral-nemo-12b-v1.Q4_K_M.gguf
+OBSIDIAN_VAULT_PATH=/path/to/your/obsidian/vault/Meetings
+WHISPER_MODEL=base
 ```
-
-Only the key for the backend you intend to use needs to be set. The app validates this at startup and exits cleanly if a required key is missing.
-
-### Whisper model sizes
-
-| Model  | Size    | Speed  | Accuracy |
-|--------|---------|--------|----------|
-| tiny   | ~75 MB  | Fast   | Lower    |
-| base   | ~140 MB | Fast   | Good     |
-| small  | ~460 MB | Medium | Better   |
-| medium | ~1.5 GB | Slow   | Best     |
-
-`base` is the default and works well for clear meeting audio.
-
-### AI backend comparison
-
-| | Whisper + OpenRouter | Whisper + Gemini |
-|---|---|---|
-| Cost | Free | Free tier / paid |
-| Audio uploaded | Never | Never |
-| Analysis quality | Good (Llama 3.3 70B) | Better (Gemini Flash) |
-| Rate limits | 20 req/min free tier | Per-day free tier limit |
-| Requires SDK | No (stdlib only) | Yes (`google-genai`) |
 
 ---
 
-## Usage
+## ⌨️ Usage
 
 ```bash
 uv run main.py
 ```
 
-You will be prompted to choose a backend before recording starts:
-
-```
-╔══════════════════════════════════╗
-║   AI Meeting Assistant (FOSS)    ║
-╚══════════════════════════════════╝
-
-Select processing backend:
-  [1] Whisper + OpenRouter
-  [2] Whisper + Gemini
-
-Enter choice (default 1):
-```
-
-Then:
-
-1. Press **Enter** to start recording
-2. Press **Enter** again to stop
-3. Whisper transcribes the audio locally
-4. The transcript is analysed by the chosen backend
-5. Minutes are saved to `meeting-content/` as a `.md` file
+1. Select **[1] Faster-Whisper + Llama.cpp**.
+2. Press **Enter** to start recording.
+3. Press **Enter** to stop.
+4. Find your summarized meeting in your Obsidian vault!
 
 ---
 
-## Output
+## 📂 Project Structure
 
-Each meeting is saved as a Markdown file in `meeting-content/`:
-
-```
-meeting-content/
-└── Q3 Budget Review - 2026-03-14 10-23.md
-```
-
-The file includes:
-
-```markdown
-# Q3 Budget Review
-
-**Date:** 2026-03-14 10:23
-
-## Summary
-...
-
-## Key Decisions
-- ...
-
-## Action Items
-- [ ] **Alice** — Send revised forecast by Friday
+- `main.py`: Entry point and orchestration.
+- `audio_manager.py`: Cross-platform audio recording.
+- `llama_cpp_processor.py`: Local LLM analysis via Llama.cpp.
+- `processor_base.py`: Faster-Whisper transcription logic.
+- `obsidian_exporter.py`: Obsidian-specific Markdown formatting.
+- `config.py`: Configuration and data models.
 
 ---
 
-## Full Transcript
-...
-```
-
----
-
-## System Audio Capture (Optional)
-
-By default only your microphone is recorded. To also capture system audio (e.g. remote participants in a call):
-
-**macOS** — Install [BlackHole](https://existential.audio/blackhole/) and create a Multi-Output Aggregate Device in Audio MIDI Setup that combines your microphone and BlackHole. The app will detect it automatically.
-
-**Windows** — Works out of the box via WASAPI loopback. No setup needed.
-
-**Linux** — Not supported automatically. Configure a PulseAudio monitor source manually.
-
----
-
-## Project Structure
-
-```
-├── main.py               # Entry point, backend selector, recording loop
-├── audio_manager.py      # Cross-platform audio capture and WAV mixing
-├── gemini_processor.py   # Whisper → Gemini pipeline
-├── meeting_processor.py  # Whisper → OpenRouter pipeline
-├── file_exporter.py      # Markdown export
-├── config.py             # Env vars, Pydantic models, logging
-└── meeting-content/      # Output directory (auto-created)
-```
-
----
-
-## Troubleshooting
-
-**`No such file or directory: 'ffmpeg'`**
-Whisper requires ffmpeg to decode audio. Install it with `brew install ffmpeg` (macOS) or `sudo apt install ffmpeg` (Linux).
-
-**`429 RESOURCE_EXHAUSTED` on Gemini**
-You've hit the free tier daily limit. The app will wait the suggested retry delay and try again automatically. If it keeps failing, switch to OpenRouter (`[1]`) or upgrade your Gemini API plan.
-
-**`No Aggregate/BlackHole device found`**
-System audio capture is optional. The app records microphone-only and continues normally. See the System Audio Capture section above to enable it.
-
-**Minutes file not created**
-Check the logs for an error from the AI backend. The transcript is still captured in memory — if analysis fails, you can re-run the app and it will re-transcribe.
+## 🛡️ Privacy
+This app is designed to be **air-gapped capable**. If using the Llama.cpp backend, **no data ever leaves your machine**. Transcription and analysis are performed entirely on your local hardware.
