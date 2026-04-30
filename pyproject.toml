@@ -3,7 +3,7 @@ name = "ai-meeting"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "google-genai>=1.65.0",
     "notion-client>=3.0.0",
@@ -11,6 +11,10 @@ dependencies = [
     "openai-whisper>=20250625",
     "faster-whisper>=1.1.0",
     "llama-cpp-python>=0.3.1",
+    "pyannote-audio==3.3.1",
+    "torch==2.4.1",
+    "torchaudio==2.4.1",
+    "torchvision==0.19.1",
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
